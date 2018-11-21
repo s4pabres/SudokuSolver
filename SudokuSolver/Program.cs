@@ -22,8 +22,9 @@ namespace SudokuSolver
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    Console.WriteLine(Cells[i,j]);
+                    Console.Write(Cells[i,j]);
                 }
+                Console.WriteLine();
             }
 
             Console.ReadKey();
