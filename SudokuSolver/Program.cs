@@ -51,11 +51,8 @@ namespace SudokuSolver
         static void Main(string[] args)
         {
             string Name = args[0];
-            ushort[,] Cells = new ushort[3, 3];
-            foreach (var cell in args[1].Split(','))
-            {
-                Cells[(ushort)(cell[0] - '0'), (ushort)(cell[1] - '0')] = (ushort)(cell[3] - '0');
-            }
+            
+            
 
             Console.WriteLine("URI: tcp://"+IP.ToString()+":"+Port);
             Console.WriteLine("Name: "+Name);
@@ -78,9 +75,7 @@ namespace SudokuSolver
             {
                 Console.WriteLine(e);
             }
-            
-            
-
+    
             Thread myThread = new Thread(new ThreadStart(waitForConnections));
             myThread.Start();
 
@@ -128,7 +123,6 @@ namespace SudokuSolver
                         value = UInt16.Parse(m1.Groups[4].Value);
                     } else {
                         name = m2.Groups[1].Value;
-
                         (x, y) = Helper.GetLocals(Name, m2.Groups[2].Value);
                         value = UInt16.Parse(m2.Groups[3].Value);
                     }
