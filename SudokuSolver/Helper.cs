@@ -54,8 +54,14 @@ namespace SudokuSolver
                     }
                 }
             }
-
             return ipAddrList.ToArray();
+        }
+
+        public static (ushort x, ushort y) GetLocals(string Name,string coords)
+        {
+            var x = (ushort) (coords[0] - Name[4]);
+            var y = (ushort) (coords[1] - Name[5]);
+            return (x, y);
         }
 
     }

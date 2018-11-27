@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace SudokuSolver
 {
@@ -73,6 +69,17 @@ namespace SudokuSolver
                 Console.WriteLine();
             }
 
+            try
+            {
+                (ushort a, ushort b) = Helper.GetLocals(Name, "D5");
+                Console.WriteLine(a + "," + b);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                Console.WriteLine(e);
+            }
+            
+            
 
             Thread myThread = new Thread(new ThreadStart(waitForConnections));
             myThread.Start();
@@ -106,11 +113,11 @@ namespace SudokuSolver
 
 
                 Match m1 = Regex.Match(msg.Msg, "^(BOX_[A-I][1-9]),([0-2]),([0-2]):([1-9])$");
-                Match m2 = Regex.Match(msg.Msg, "^(BOX_[A-I][1-9]),([A-I])([1-9]):([1-9])$");
+                Match m2 = Regex.Match(msg.Msg, "^(BOX_[A-I][1-9]),([A-I][1-9]):([1-9])$");
                 if (m1.Success || m2.Success)
                 {
                     string name;
-                    ushort x = 3, y = 3;
+                    ushort x, y;
                     ushort value;
 
                     if (m1.Success)
@@ -118,20 +125,15 @@ namespace SudokuSolver
                         name = m1.Groups[1].Value;
                         x = UInt16.Parse(m1.Groups[2].Value);
                         y = UInt16.Parse(m1.Groups[3].Value);
-                        value = UInt16.Parse(m1.Groups[3].Value);
-                    }
-
-                    if (m2.Success)
-                    {
+                        value = UInt16.Parse(m1.Groups[4].Value);
+                    } else {
                         name = m2.Groups[1].Value;
-                        if (Helper.Local[Name].ContainsKey(m2.Groups[2].Value[0]))
-                            x = Helper.Local[Name][m2.Groups[2].Value[0]];
-                        if (Helper.Local[Name].ContainsKey(m2.Groups[3].Value[0]))
-                            y = Helper.Local[Name][m2.Groups[3].Value[0]];
+
+                        (x, y) = Helper.GetLocals(Name, m2.Groups[2].Value);
                         value = UInt16.Parse(m2.Groups[3].Value);
                     }
 
-                    if (x < 3 && y < 3)
+                    if (x < 2 && y < 2)
                     {
                         // Do Sodoku-Stuff
                     }
