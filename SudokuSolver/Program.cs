@@ -116,7 +116,7 @@ namespace SudokuSolver
                     }
                     else
                     {
-                        //Wrong/Unnecessary Rows or Colums send
+                        Console.WriteLine("Row/Columm not inside Box");
                     }
                 }
 
