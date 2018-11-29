@@ -127,7 +127,7 @@ namespace SudokuSolver
                         value = UInt16.Parse(m2.Groups[3].Value);
                     }
 
-                    if (x < 2 && y < 2)
+                    if (x <= 2 && y <=2)
                     {
                         // Do Sodoku-Stuff
                     }

@@ -1,50 +1,72 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace SudokuSolver
 {
-    class Box
+    internal class Box
     {
-        public ushort[,] Cells { get; private set; } = new ushort[3, 3] ;
-        private Dictionary<ushort, Dictionary<ushort, LinkedList<ushort>>> PossibleValues = new Dictionary<ushort, Dictionary<ushort, LinkedList<ushort>>>();
+        private readonly Cell[ , ] _cells = new Cell[ 3, 3 ];
+
+        private readonly Dictionary < ushort, Dictionary < ushort, LinkedList < ushort > > > _possibleValues =
+            new Dictionary < ushort, Dictionary < ushort, LinkedList < ushort > > >();
 
 
-        public Box(string Init)
+        public Box( string Init )
         {
-
-            for(ushort i = 0;i<3;i++)
+            foreach ( var cell in Init.Split( ',' ) )
             {
-                for (ushort j = 0; j < 3; j++)
-                {
-                    for (ushort v = 1; v < 10; v++)
-                    {
-                        PossibleValues[i][j].AddLast(v);
-                    }
-                }
-            }
+                var x = (ushort) ( cell[0] - '0' );
+                var y = (ushort) ( cell[1] - '0' );
+                var value = (ushort) ( cell[3] - '0' );
 
-            foreach (var cell in Init.Split(','))
-            {
-                ushort x = (ushort)(cell[0] - '0');
-                ushort y = (ushort)(cell[1] - '0');
-                ushort value = (ushort)(cell[3] - '0');
-
-                Cells[x, y] = value;
-                RemPossibleValue(x, y, value);
-
+                _cells[x, y] = new Cell( this, x, y, value );
             }
         }
 
-        private ushort RemPossibleValue(ushort x, ushort y, ushort value)
+        private ushort RemPossibleValue( ushort x, ushort y, ushort value )
         {
-            if (PossibleValues[x][y].Contains(value))
+            if ( _possibleValues[x][y].Contains( value ) )
             {
-                
+
             }
+
             return 0;
+        }
+
+        public override string ToString()
+        {
+            var s = "";
+            for ( var i = 0; i < 3; i++ )
+            {
+                for ( var j = 0; j < 3; j++ ) s += _cells[i, j] + " ";
+                s += "\n";
+            }
+
+            return s;
+        }
+
+        private class Cell
+        {
+            public Cell( Box box, ushort x, ushort y, ushort value )
+            {
+                Box = box;
+                Value = value;
+                X = x;
+                Y = y;
+                for ( ushort i = 1; i < 10; i++ )
+                    if ( i != value )
+                        PossibleValues.AddLast( i );
+            }
+
+            public LinkedList < ushort > PossibleValues { get; } = new LinkedList < ushort >();
+            public Box Box { get; }
+            public ushort Value { get; private set; }
+            public ushort X { get; }
+            public ushort Y { get; }
+
+            public void SetValue( ushort value )
+            {
+                Value = value;
+            }
         }
     }
 }
