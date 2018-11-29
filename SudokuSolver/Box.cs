@@ -2,6 +2,13 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 
+/**     - Jede Zelle hat ein Array der Größe 9
+        - Der Inhalt jeder Zelle sind die Werte von 1 - 9
+        - Falls ein Input vom Manager kommt, der den (nicht)-Wert einer Zelle enthält, 
+          wird das jeweilige Zellen-Array durchlaufen, der Wert wird gesucht und gelöscht
+        - Wenn die Größe des Arrays 1 beträgt, wird der Inhalt dieser Zelle an den Manager gesendet
+**/
+
 namespace SudokuSolver
 {
     internal class Box
