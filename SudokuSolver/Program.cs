@@ -14,13 +14,13 @@ namespace SudokuSolver
         private const ushort Port = 8080;
         private static readonly IPAddress IP = Helper.GetAllLocalIPv4(NetworkInterfaceType.Ethernet)[0];
 
-        private static ConcurrentDictionary<string, TcpClient> NeighbourClients = new ConcurrentDictionary<string, TcpClient>();
+        
         private static ConcurrentDictionary<TcpClient,Thread> allClients = new ConcurrentDictionary<TcpClient, Thread>();
 
         private static ConcurrentQueue<Message> MessageQueue = new ConcurrentQueue<Message>();
         
 
-        static void waitForConnections()
+        static void WaitForConnections()
         {
             TcpListener listener = new TcpListener(IP,Port);
             listener.Start();
@@ -28,13 +28,13 @@ namespace SudokuSolver
             while (true)
             {
                 var c = listener.AcceptTcpClient();
-                var t = new Thread(new ParameterizedThreadStart(readClientMessage));
+                var t = new Thread(new ParameterizedThreadStart(ReadClientMessage));
                 t.Start(c);
                 allClients[c] = t;
             }
         }
 
-        static void readClientMessage(Object obj)
+        static void ReadClientMessage(Object obj)
         {
             TcpClient c = (TcpClient) obj;
             while (true)
@@ -52,31 +52,14 @@ namespace SudokuSolver
         {
             string Name = args[0];
             
-            
+            Box box = new Box( Name, args[1] );
 
             Console.WriteLine("URI: tcp://"+IP.ToString()+":"+Port);
             Console.WriteLine("Name: "+Name);
             Console.WriteLine("Cells:");
-            for (var j = 0; j < Cells.GetLength(0); j++)
-            {
-                for (var i = 0; i < Cells.GetLength(1); i++)
-                {
-                    Console.Write(Cells[i,j]+" ");
-                }
-                Console.WriteLine();
-            }
-
-            try
-            {
-                (ushort a, ushort b) = Helper.GetLocals(Name, "D5");
-                Console.WriteLine(a + "," + b);
-            }
-            catch (IndexOutOfRangeException e)
-            {
-                Console.WriteLine(e);
-            }
+            Console.WriteLine(box);
     
-            Thread myThread = new Thread(new ThreadStart(waitForConnections));
+            Thread myThread = new Thread(new ThreadStart(WaitForConnections));
             myThread.Start();
 
             TcpClient Manager = new TcpClient();
@@ -100,7 +83,7 @@ namespace SudokuSolver
                 if (!MessageQueue.TryDequeue(out msg))
                     continue;
 
-                if (msg.Equals("FEIERABEND"))
+                if (msg.Msg.Equals("FEIERABEND"))
                 {
                     //Do Feierabend-Stuff
                     continue;
@@ -129,7 +112,7 @@ namespace SudokuSolver
 
                     if (x <= 2 && y <=2)
                     {
-                        // Do Sodoku-Stuff
+                        box.RemPossibleValue( x,y,value );
                     }
                     else
                     {

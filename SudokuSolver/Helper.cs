@@ -21,7 +21,7 @@ namespace SudokuSolver
             {"BOX_G4", new[] { "BOX_G1", "BOX_D4", "BOX_G7" }},
             {"BOX_A7", new[] { "BOX_G1", "BOX_D4" }},
             {"BOX_D7", new[] { "BOX_D4", "BOX_A7", "BOX_G7" }},
-            {"BOX_G7", new[] { "BOX_G4", "BOX_D7" }},
+            {"BOX_G7", new[] { "BOX_G4", "BOX_D7" }}
         };
 
 

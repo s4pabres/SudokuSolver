@@ -1,43 +1,74 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Net.Sockets;
 
 namespace SudokuSolver
 {
     internal class Box
     {
-        private readonly Cell[ , ] _cells = new Cell[ 3, 3 ];
+        private readonly Cell[,] _cells = new Cell[3, 3];
+        private static ConcurrentDictionary<string, TcpClient> NeighbourClients = new ConcurrentDictionary<string, TcpClient>();
 
-        private readonly Dictionary < ushort, Dictionary < ushort, LinkedList < ushort > > > _possibleValues =
-            new Dictionary < ushort, Dictionary < ushort, LinkedList < ushort > > >();
+        public string Name { get; private set; }
 
-
-        public Box( string Init )
+        public Box(string name, string Init)
         {
-            foreach ( var cell in Init.Split( ',' ) )
-            {
-                var x = (ushort) ( cell[0] - '0' );
-                var y = (ushort) ( cell[1] - '0' );
-                var value = (ushort) ( cell[3] - '0' );
+            Name = name;
 
-                _cells[x, y] = new Cell( this, x, y, value );
+            foreach (var cell in Init.Split(','))
+            {
+                var x = (ushort)(cell[0] - '0');
+                var y = (ushort)(cell[1] - '0');
+                var value = (ushort)(cell[3] - '0');
+
+                _cells[x, y] = new Cell(this, x, y, value);
             }
+
+            RemAllPossibleValues();
         }
 
-        private ushort RemPossibleValue( ushort x, ushort y, ushort value )
+        private void RemAllPossibleValues()
         {
-            if ( _possibleValues[x][y].Contains( value ) )
-            {
+            foreach (var cell in _cells)
+                if (cell.Value != 0)
+                    foreach (var cell2 in _cells)
+                    {
+                        if (cell == cell2)
+                            continue;
 
-            }
+                        cell2.PossibleValues.Remove(cell.Value);
+                    }
 
-            return 0;
+            CheckForNewValue();
+        }
+
+        public void RemPossibleValue(ushort x, ushort y, ushort value)
+        {
+            var cell = _cells[x, y];
+            if (cell.Value != 0)
+                foreach (var cell2 in _cells)
+                {
+                    if (cell == cell2 || (cell.X != cell2.X && cell.Y != cell2.Y)  )
+                        continue;
+
+                    cell2.PossibleValues.Remove(cell.Value);
+                }
+            CheckForNewValue();
+        }
+
+        private void CheckForNewValue()
+        {
+            foreach (var cell in _cells)
+                if (cell.PossibleValues.Count == 1)
+                    cell.SetValue(cell.PossibleValues.Last.Value);
         }
 
         public override string ToString()
         {
             var s = "";
-            for ( var i = 0; i < 3; i++ )
+            for (var i = 0; i < 3; i++)
             {
-                for ( var j = 0; j < 3; j++ ) s += _cells[i, j] + " ";
+                for (var j = 0; j < 3; j++) s += _cells[i, j] + " ";
                 s += "\n";
             }
 
@@ -46,26 +77,34 @@ namespace SudokuSolver
 
         private class Cell
         {
-            public Cell( Box box, ushort x, ushort y, ushort value )
+            public Cell(Box box, ushort x, ushort y, ushort value)
             {
                 Box = box;
                 Value = value;
                 X = x;
                 Y = y;
-                for ( ushort i = 1; i < 10; i++ )
-                    if ( i != value )
-                        PossibleValues.AddLast( i );
+                for (ushort i = 1; i < 10; i++)
+                    if (i != value)
+                        PossibleValues.AddLast(i);
             }
 
-            public LinkedList < ushort > PossibleValues { get; } = new LinkedList < ushort >();
+            public LinkedList<ushort> PossibleValues { get; } = new LinkedList<ushort>();
             public Box Box { get; }
             public ushort Value { get; private set; }
             public ushort X { get; }
             public ushort Y { get; }
 
-            public void SetValue( ushort value )
+            public void SetValue(ushort value)
             {
+                PossibleValues.Remove(value);
                 Value = value;
+
+                foreach ( var s in Helper.Neighbours[Box.Name] )
+                {
+                    Message.SendMessage( NeighbourClients[s], Box.Name + ","+X+","+Y+":"+Value );
+                }
+
+                Box.RemAllPossibleValues();
             }
         }
     }
