@@ -15,19 +15,21 @@ namespace SudokuSolver
         {
             Name = name;
 
+            for (ushort i = 0; i < 3; i++)
+                for (ushort j = 0; j < 3; j++)
+                    _cells[i, j] = new Cell(this,i,j,0);
+
             foreach (var cell in Init.Split(','))
             {
                 var x = (ushort)(cell[0] - '0');
                 var y = (ushort)(cell[1] - '0');
                 var value = (ushort)(cell[3] - '0');
 
-                _cells[x, y] = new Cell(this, x, y, value);
+                _cells[x, y].Value = value;
             }
-
-            RemAllPossibleValues();
         }
-
-        private void RemAllPossibleValues()
+        
+        public void DetermineValues()
         {
             foreach (var cell in _cells)
                 if (cell.Value != 0)
@@ -39,10 +41,12 @@ namespace SudokuSolver
                         cell2.PossibleValues.Remove(cell.Value);
                     }
 
-            CheckForNewValue();
+            foreach (var cell in _cells)
+                if (cell.PossibleValues.Count == 1)
+                    cell.SetValue(cell.PossibleValues.Last.Value);
         }
 
-        public void RemPossibleValue(ushort x, ushort y, ushort value)
+        public void RemoveValue(ushort x, ushort y, ushort value)
         {
             var cell = _cells[x, y];
             if (cell.Value != 0)
@@ -53,14 +57,10 @@ namespace SudokuSolver
 
                     cell2.PossibleValues.Remove(cell.Value);
                 }
-            CheckForNewValue();
-        }
 
-        private void CheckForNewValue()
-        {
-            foreach (var cell in _cells)
-                if (cell.PossibleValues.Count == 1)
-                    cell.SetValue(cell.PossibleValues.Last.Value);
+            foreach (var c in _cells)
+                if (c.PossibleValues.Count == 1)
+                    c.SetValue(c.PossibleValues.Last.Value);
         }
 
         public override string ToString()
@@ -68,7 +68,7 @@ namespace SudokuSolver
             var s = "";
             for (var i = 0; i < 3; i++)
             {
-                for (var j = 0; j < 3; j++) s += _cells[i, j] + " ";
+                for (var j = 0; j < 3; j++) s += _cells[j, i].Value + " ";
                 s += "\n";
             }
 
@@ -90,7 +90,7 @@ namespace SudokuSolver
 
             public LinkedList<ushort> PossibleValues { get; } = new LinkedList<ushort>();
             public Box Box { get; }
-            public ushort Value { get; private set; }
+            public ushort Value;
             public ushort X { get; }
             public ushort Y { get; }
 
@@ -104,7 +104,7 @@ namespace SudokuSolver
                     Message.SendMessage( NeighbourClients[s], Box.Name + ","+X+","+Y+":"+Value );
                 }
 
-                Box.RemAllPossibleValues();
+                Box.DetermineValues();
             }
         }
     }

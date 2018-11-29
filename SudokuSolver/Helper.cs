@@ -24,6 +24,7 @@ namespace SudokuSolver
             {"BOX_G7", new[] { "BOX_G4", "BOX_D7" }}
         };
 
+        public static readonly Dictionary<string, TcpClient> NeighbourClients = new Dictionary<string, TcpClient>();
 
         public static IPAddress[] GetAllLocalIPv4(NetworkInterfaceType _type)
         {
